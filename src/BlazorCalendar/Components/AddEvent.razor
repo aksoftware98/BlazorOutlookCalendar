@@ -1,0 +1,64 @@
+@inject ICalendarEventsProvider eventsProvider
+
+<!-- Add Event -->
+            <div class="ms-depth-16 card">
+                <EditForm model="model" OnValidSubmit="AddEventToSelectedDay">
+                <div class="calendar-toolbar">
+                    <button class="toolbar-button" type="submit"><i class="ms-Icon ms-Icon--AddEvent"></i></button>
+                </div>
+
+                <div class="card-content">
+                    <h3 class="ms-fontSize-24 ms-fontWeight-regular">@SelectedDay.Date.ToString("D")</h3>
+                    <input type="text" @bind-value="model.Subject" class="fluent-input" placeholder="Event Subject">
+                    <input type="time" @bind-value="model.StartDate" class="fluent-input" placeholder="Event Subject">
+                    <input type="time" @bind-value="model.EndDate" class="fluent-input" placeholder="Event Subject">
+                </div>
+                </EditForm>
+            </div>
+
+@code 
+{
+    [Parameter]
+    public CalendarDay SelectedDay { get; set; }
+
+    private CalendarEvent model = new CalendarEvent();
+
+    private async Task AddEventToSelectedDay()
+    {
+        // Convert the time to the a new date within the selected day 
+        model.StartDate = new DateTime(SelectedDay.Date.Year,
+                                        SelectedDay.Date.Month,
+                                        SelectedDay.Date.Day,
+                                        model.StartDate.Hour,
+                                        model.StartDate.Minute,
+                                        0);
+
+        model.EndDate = new DateTime(SelectedDay.Date.Year,
+                                        SelectedDay.Date.Month,
+                                        SelectedDay.Date.Day,
+                                        model.EndDate.Hour,
+                                        model.EndDate.Minute,
+                                        0);
+
+        if(SelectedDay.Events == null)
+            SelectedDay.Events = new List<CalendarEvent>();
+        
+        var calendarEvent = new CalendarEvent
+        {
+            Subject = model.Subject,
+            StartDate = model.StartDate,
+            EndDate = model.EndDate
+        };
+        SelectedDay.Events.Add(calendarEvent); 
+        OnEventAdded.Invoke();
+        // TODO: Push the event to the API 
+        await eventsProvider.AddEventAsync(calendarEvent);
+
+        Console.WriteLine($"Total Events in Day {SelectedDay.Events.Count} | {model.Subject} | {model.StartDate} | {model.EndDate}");
+
+        model = new CalendarEvent(); 
+    }
+
+    public static event Action OnEventAdded = () => {  };
+
+}
