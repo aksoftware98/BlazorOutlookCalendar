@@ -5,7 +5,7 @@
                 <div class="row">
                     <div class="col-sm-12 col-lg-2">
                         <select  name="" id="" class="fluent-input" @onchange="SelectYear">
-                            @for (int i = 2010; i < 2022; i++)
+                            @for (int i = 2010; i < 2025; i++)
                             {
                                 <option>@i</option>
                             }
@@ -140,7 +140,7 @@
     {
         // fetch the events for the month 
         var events = await eventsProvider.GetEventsInMonthAsync(year, month);
-
+        
         if(events == null || events.Count() == 0)
             return; 
 

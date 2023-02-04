@@ -123,7 +123,8 @@ namespace BlazorCalendar.Services
 
         private string ConstructGraphUrl(int year, int month)
         {
-            return $"{BASE_URL}?$filter=start/datetime ge '{year}-{month}-01T00:00' and end/dateTime le '{year}-{month}-31T00:00'&$select=subject,start,end";
+            var daysInMonth = DateTime.DaysInMonth(year, month);
+            return $"{BASE_URL}?$filter=start/dateTime ge '{year}-{month}-01T00:00' and end/dateTime le '{year}-{month}-{daysInMonth}T00:00'&$select=subject,start,end";
         }
     }
 }
