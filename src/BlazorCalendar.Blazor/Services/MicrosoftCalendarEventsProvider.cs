@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using BlazorCalendar.Models;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
-using Newtonsoft.Json;
+using BlazorCalendar.Blazor.Models;
+using System.Text.Json;
 
-namespace BlazorCalendar.Services
+namespace BlazorCalendar.Blazor.Services
 {
     public class MicrosoftCalendarEventsProvider : ICalendarEventsProvider
     {
@@ -16,11 +16,15 @@ namespace BlazorCalendar.Services
         private readonly HttpClient _httpClient;
 
         private const string BASE_URL = "https://graph.microsoft.com/v1.0/me/events";
-
+        private readonly JsonSerializerOptions _serializationOptions;
         public MicrosoftCalendarEventsProvider(IAccessTokenProvider accessTokenProvider, HttpClient httpClient)
         {
             _accessTokenProvider = accessTokenProvider;
             _httpClient = httpClient;
+            _serializationOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
         }
 
         public async Task<IEnumerable<CalendarEvent>> GetEventsInMonthAsync(int year, int month)
@@ -44,7 +48,7 @@ namespace BlazorCalendar.Services
             // 4- Read the content 
             var contentAsString = await response.Content.ReadAsStringAsync(); 
 
-            var microsoftEvents = JsonConvert.DeserializeObject<GraphEventsResponse>(contentAsString);
+            var microsoftEvents = JsonSerializer.Deserialize<GraphEventsResponse>(contentAsString, _serializationOptions);
 
             // Convert the Microsoft Event object into CalendarEvent object
             var events = new List<CalendarEvent>();
@@ -75,7 +79,7 @@ namespace BlazorCalendar.Services
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken);
 
             // 3- Initialize the content of the post request 
-            string eventAsJson = JsonConvert.SerializeObject(new MicrosoftGraphEvent
+            string eventAsJson = JsonSerializer.Serialize(new MicrosoftGraphEvent
             {
                 Subject = calendarEvent.Subject,
                 Start = new DateTimeTimeZone 
@@ -88,7 +92,7 @@ namespace BlazorCalendar.Services
                     DateTime = calendarEvent.EndDate.ToString(),
                     TimeZone = TimeZoneInfo.Local.Id,
                 }
-            });
+            }, _serializationOptions);
 
             var content = new StringContent(eventAsJson);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json"); 

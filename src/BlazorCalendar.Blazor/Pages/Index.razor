@@ -1,5 +1,7 @@
 ﻿@page "/"
 
+<PageTitle>Index</PageTitle>
+
  <!-- Header -->
 <header>
         <h3 class="ms-fontSize-42 ms-fontWeight-regular">Welcome to Blazor Calendar</h3>
@@ -64,19 +66,5 @@
 
             </Authorized>
    </AuthorizeView>
-@code 
-{
-    private CalendarDay selectedDay = new  CalendarDay
-    {
-        Date = DateTime.Now
-    };
 
-    protected override void OnInitialized()
-    {
-        AddEvent.OnEventAdded += () => 
-        {
-            StateHasChanged();
-        };
-    }
-
-}
+									

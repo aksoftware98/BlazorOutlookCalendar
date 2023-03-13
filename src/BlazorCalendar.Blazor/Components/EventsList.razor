@@ -1,0 +1,37 @@
+<div class="ms-depth-16 card">
+                <div class="card-content">
+                    <h3 class="ms-fontSize-22 ms-fontWeight-regular">@SelectedDay.Date.ToString("D")</h3>
+                    @{
+                        if(SelectedDay.Events == null || SelectedDay.Events.Count == 0)
+                        {
+                            <h3 class="ms-fontSize-14 ms-fontWeight-regular">No Events in this Day</h3>
+                        }
+                        else
+                        {
+                               @foreach (var item in SelectedDay.Events)
+                                {
+                                    string colorClass = item.Color;
+
+                                     <div class="event shadow-effect @colorClass">
+                                        <h3 class="ms-fontSize-14 ms-fontWeight-regular">@item.StartDate.ToString("HH:mm") to @item.EndDate.ToString("HH:mm")</h3>
+                                        <p class="ms-fontSize-11 ms-fontWeight-regular">@item.Subject</p>
+                                    </div>
+                                }
+                        }
+                    }
+                </div>
+            </div>
+
+@code 
+{
+    [Parameter]
+    public CalendarDay SelectedDay {get; set;}
+
+    protected override void OnInitialized()
+    {
+        AddEvent.OnEventAdded += () => 
+        {
+            StateHasChanged();
+        };
+    }
+}
