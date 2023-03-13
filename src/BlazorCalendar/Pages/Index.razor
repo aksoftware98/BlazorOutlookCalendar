@@ -52,11 +52,9 @@
                 </DayTemplate>
             </Calendar>
        </div>
-
-
          <!-- Day Menu -->
         <div class="col-sm-12 col-md-12 col-lg-3">
-            <AddEvent SelectedDay="@selectedDay" />
+            <AddEvent SelectedDay="@selectedDay" OnEventAdded="(e) => selectedDay.Events.Add(e)" />
 
             <EventsList SelectedDay="@selectedDay" />
         </div>
@@ -70,13 +68,5 @@
     {
         Date = DateTime.Now
     };
-
-    protected override void OnInitialized()
-    {
-        AddEvent.OnEventAdded += () => 
-        {
-            StateHasChanged();
-        };
-    }
 
 }

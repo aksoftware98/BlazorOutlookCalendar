@@ -21,6 +21,9 @@
     [Parameter]
     public CalendarDay SelectedDay { get; set; }
 
+	[Parameter]
+	public EventCallback<CalendarEvent> OnEventAdded { get; set; }
+
     private CalendarEvent model = new CalendarEvent();
 
     private async Task AddEventToSelectedDay()
@@ -49,8 +52,7 @@
             StartDate = model.StartDate,
             EndDate = model.EndDate
         };
-        SelectedDay.Events.Add(calendarEvent); 
-        OnEventAdded.Invoke();
+        await OnEventAdded.InvokeAsync(calendarEvent);
         // TODO: Push the event to the API 
         await eventsProvider.AddEventAsync(calendarEvent);
 
@@ -58,7 +60,6 @@
 
         model = new CalendarEvent(); 
     }
-
-    public static event Action OnEventAdded = () => {  };
+	
 
 }
