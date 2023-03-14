@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using BlazorCalendar.Models;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using Microsoft.Graph;
+using Microsoft.Kiota.Abstractions.Authentication;
 using Newtonsoft.Json;
 
 namespace BlazorCalendar.Services
@@ -12,12 +15,12 @@ namespace BlazorCalendar.Services
     {
 
         // Get Access token 
-        private readonly IAccessTokenProvider _accessTokenProvider;
+        private readonly Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider _accessTokenProvider;
         private readonly HttpClient _httpClient;
 
         private const string BASE_URL = "https://graph.microsoft.com/v1.0/me/events";
 
-        public MicrosoftCalendarEventsProvider(IAccessTokenProvider accessTokenProvider, HttpClient httpClient)
+        public MicrosoftCalendarEventsProvider(Microsoft.AspNetCore.Components.WebAssembly.Authentication.IAccessTokenProvider accessTokenProvider, HttpClient httpClient)
         {
             _accessTokenProvider = accessTokenProvider;
             _httpClient = httpClient;
@@ -102,6 +105,14 @@ namespace BlazorCalendar.Services
                 Console.WriteLine(response.StatusCode);
         }
 
+		private async Task<GraphServiceClient> BuildGraphClientAsync()
+        {
+            var token = await GetAccessTokenAsync();
+            var tokenProvider = new GraphTokenProvider(token);
+            var authProvider = new BaseBearerTokenAuthenticationProvider(tokenProvider);
+            return new GraphServiceClient(authProvider); 
+        }
+
         private async Task<string> GetAccessTokenAsync()
         {
             var tokenRequest = await _accessTokenProvider.RequestAccessToken(new AccessTokenRequestOptions
@@ -127,4 +138,21 @@ namespace BlazorCalendar.Services
             return $"{BASE_URL}?$filter=start/dateTime ge '{year}-{month}-01T00:00' and end/dateTime le '{year}-{month}-{daysInMonth}T00:00'&$select=subject,start,end";
         }
     }
+
+	internal class GraphTokenProvider : Microsoft.Kiota.Abstractions.Authentication.IAccessTokenProvider
+	{
+		public AllowedHostsValidator AllowedHostsValidator { get; }
+			
+		private readonly string _accessToken;
+
+		public GraphTokenProvider(string accessToken)
+		{
+			_accessToken = accessToken;
+		}
+
+		public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object> additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
+		{
+            return Task.FromResult(_accessToken);
+		}
+	}
 }
